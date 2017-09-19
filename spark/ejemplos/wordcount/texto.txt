@@ -1,0 +1,5 @@
+Texto de prueba
+
+Este es un texto de prueba para comprobar 2 formas distintas haciendo uso de regex para determinar el número de palabras. Voy a escribir muchisimas tonterias con caracteres raros y palabras seguidas de comas, mas espacios vacíos   y más cosas por el estilo y así de alguna forma hacer tiempo mientras escribo y escribo y sigo escribiendo. Debo probar cosas tales como: la palabra como pero sin que inmediatamente después tengo un signo de puntuación o por el contrario la palabra ¿cómo? como se puede ver a modo de interrogación, me imagino que quien lea esto dirá "dios como hiciste para poder alcanzar tantas palabras juntas sin ningún significado", yo tamnpoco se como lo estoy haciendo a medida que escribo estas lineas.
+
+FInalmente me despido pero con otro finalmente en minuscula, no obstante tengo otras palabras las cuales no acentué de la manera correcta de igual manera a modo de probar cuan certero es o son los contadores nos puede dar igual   y sigo con los espacios y demás cosas raras,, , en fin, chao.
