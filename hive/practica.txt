@@ -1,0 +1,92 @@
+Dado el archivo censo.csv con los datos
+1, Jose Antonio, Rodriguez Diaz,37, Ingeniero,A
+2, Maria Isabel, Gomez Gallanti,34, Medico,B
+3, Norma Elena, Diaz Domar,60, Ama de casa,C
+4, Rafael, Perez,38, Ingeniero,A
+5, Maria Laura, Rodriguez Gomez,1, Estudiante,B
+6, Nieves Magali, Diaz Dommar,75, Administrador,C
+7, Carlos Alfredo, Diaz Dommar,36, Administrador,A
+8, Antonio Jose, Rodriguez Diaz,24, Estudiante,B
+9, Argenis Jose, Farfan Rodriguez,33, Ingeniero,C
+10, Isabel Maria, Farfan Rodriguez,37, Ingeniero,A
+11, Maria Isabel, Rodriguez Morales,58, Estudiante,B
+
+CREATE TABLE CENSO (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String, GRUPO char(1)) 
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',’;
+
+LOAD DATA LOCAL INPATH '/home/cloudera/censo.csv' INTO TABLE CENSO;
+
+INSERT INTO TABLE CENSO VALUES (12, "PEDRO", "PEREZ",40, "Ingeniero",'A');
+INSERT INTO TABLE CENSO VALUES (13, "Carmen", "De Mallen",65, "Administrador",'B');
+
+Podemos darnos cuenta que cada inserción se corresponde a un proceso MapReduce y a un nuevo archivo en hdfs.
+
+CREATE EXTERNAL TABLE CENSO_AUX (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String, GRUPO char(1))
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+LOAD DATA LOCAL INPATH '/home/cloudera/censo.csv' INTO TABLE CENSO_AUX;
+
+INSERT INTO TABLE CENSO_AUX VALUES (12, "PEDRO", "PEREZ",40, "Ingeniero”,'A');
+
+Podemos darnos cuenta que cada inserción al igual que en las tablas manejadas por hive se corresponde a un proceso MapReduce y a un nuevo archivo en hdfs.
+
+CREATE EXTERNAL TABLE CENSO_AUX2 (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String, GRUPO char(1))
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/cloudera/censo.csv’;
+
+INSERT INTO TABLE CENSO_AUX2 VALUES (12, "PEDRO", "PEREZ",40, "Ingeniero”,'A');
+
+Podemos darnos cuenta que cada inserción al igual que en las tablas manejadas por hive se corresponde a un proceso MapReduce y a un nuevo archivo en hdfs, pero en la ruta indicada por la ruta LOCATION. Al eliminar la tabla se mantienen los datos.
+
+CREATE TABLE CENSO_TXT (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String)
+PARTITIONED BY (GRUPO String)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+SET hive.exec.dynamic.partition.mode=nonstrict;
+INSERT OVERWRITE TABLE CENSO_TXT PARTITION(GRUPO)
+SELECT * FROM CENSO;
+
+drwxrwxrwx   - cloudera supergroup          0 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=A
+-rwxrwxrwx   1 cloudera supergroup        203 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=A/000000_0
+drwxrwxrwx   - cloudera supergroup          0 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=B
+-rwxrwxrwx   1 cloudera supergroup        224 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=B/000000_0
+drwxrwxrwx   - cloudera supergroup          0 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=C
+-rwxrwxrwx   1 cloudera supergroup        139 2017-08-20 14:41 /user/hive/warehouse/censo_txt/grupo=C/000000_0
+
+hive> SELECT * FROM CENSO_TXT WHERE GRUPO='A';
+OK
+12    PEDRO    PEREZ    40    Ingeniero    A
+1     Jose Antonio     Rodriguez Diaz    37     Ingeniero    A
+4     Rafael     Perez    38     Ingeniero    A
+7     Carlos Alfredo     Diaz Dommar    36     Administrador    A
+10     Isabel Maria     Farfan Rodriguez    37     Ingeniero    A
+
+
+INSERT INTO TABLE CENSO VALUES (14, “Maria", “Bonita",40, "Ingeniero”,'A');
+
+INSERT OVERWRITE TABLE CENSO_TXT PARTITION(GRUPO)
+SELECT * FROM CENSO;
+
+//Este ejercicio aún no funciona
+CREATE TABLE CENSO_TXT (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String)
+PARTITIONED BY (GRUPO String)
+CLUSTERED BY (ID) SORTED BY (ID ASC) INTO 2 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+INSERT OVERWRITE TABLE CENSO_TXT PARTITION(GRUPO)
+SELECT * FROM CENSO;
+
+CREATE TABLE CENSO_PARQUET (ID int, NOMBRE String, APELLIDO String, EDAD INT, PROFESION String)
+PARTITIONED BY (GRUPO String)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS PARQUET;
+
+INSERT OVERWRITE TABLE CENSO_PARQUET PARTITION(GRUPO)
+SELECT * FROM CENSO;
