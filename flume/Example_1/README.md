@@ -20,3 +20,19 @@ Agente Flume:
  >INFO hdfs.HDFSEventSink: Writer callback called.
 
 Una vez terminado el proceso, se marcará el fichero como finalizado añadiendo la extension *COMPLETED*, para que no vuelva a ser procesado
+
+* Como añadido podemos añadir cierto procesamiento a los eventos antes de pasarlos al canal, mediante los interceptores.
+
+Uno de los interceptores más usados es el del tipo timestamp, para lo cual debemos añadir la siguiente configuración:
+
+ >agent1.sources.source1.interceptors.i1.type = timestamp
+ >agent1.sources.source1.interceptors.i1.preserveExisting = true
+ >agent1.sinks.sink1.hdfs.path = /tmp/flume/events/%y-%m-%d/%H%M/%S
+ >agent1.sources.source1.interceptors = i1
+
+* Con lo que tendremos la siguiente salida:
+
+ >17/09/29 09:16:34 INFO hdfs.BucketWriter: Closing /tmp/flume/events/17-09-29/0915/59/_events.1506701760251.log.tmp
+ >17/09/29 09:16:34 INFO hdfs.BucketWriter: Renaming /tmp/flume/events/17-09-29/0915/59/_events.1506701760251.log.tmp to /tmp/flume/events/17-09-29/0915/59/events.1506701760251.log
+
+ 
