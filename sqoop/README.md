@@ -1,3 +1,3 @@
-# Hive
+# Sqoop
 
 Ejemplo practico de Sqoop y ejercicios
