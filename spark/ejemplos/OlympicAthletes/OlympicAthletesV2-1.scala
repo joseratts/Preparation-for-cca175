@@ -7,7 +7,7 @@ val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 import sqlContext.implicits._
 
 case class OlympicData (name: String, age: Int, country: String, year: Int, date: String, discipline: String, gold: Int, silver: Int, bronze: Int, medals: Int);
-val textFile = sc.textFile("file:///home/cloudera/Documents/OlympicAthletes.csv")
+val textFile = sc.textFile("file:////home/cloudera/Preparation-for-cca175/spark/ejemplos/OlympicAthletes/data/OlympicAthletes.csv")
 val df = textFile.map{line => val values = line.split(",")
 OlympicData(values(0), values(1).toInt, values(2), values(3).toInt, values(4), values(5), values(6).toInt, values(7).toInt, values(8).toInt, values(9).toInt)}.toDF()
 
