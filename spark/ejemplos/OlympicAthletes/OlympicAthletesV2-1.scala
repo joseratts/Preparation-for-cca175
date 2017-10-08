@@ -22,15 +22,15 @@ val result2 = sqlContext.sql("SELECT name, SUM(gold*3 + silver*2 + bronze) AS PO
 result2.coalesce(1).foreach(println)
 
 //Ejercicio 3
-val result3 = sqlContext.sql("SELECT country, COUNT(medals) AS TOTAL_MEDALS FROM OlympicAthletes WHERE discipline = 'Swimming' GROUP BY country ORDER BY TOTAL_MEDALS DESC LIMIT 20");
+val result3 = sqlContext.sql("SELECT country, SUM(medals) AS TOTAL_MEDALS FROM OlympicAthletes WHERE discipline = 'Swimming' GROUP BY country ORDER BY TOTAL_MEDALS DESC LIMIT 20");
 result3.coalesce(1).foreach(println)
 
 //Ejercicio 4
-val result4 = sqlContext.sql("SELECT year, COUNT(medals) AS TOTAL_MEDALS FROM OlympicAthletes WHERE country = 'India' GROUP BY year ORDER BY year ASC");
+val result4 = sqlContext.sql("SELECT year, SUM(medals) AS TOTAL_MEDALS FROM OlympicAthletes WHERE country = 'India' GROUP BY year ORDER BY year ASC");
 result4.coalesce(1).foreach(println)
 
 //Ejercicio 5
-val result5 = sqlContext.sql("SELECT country, COUNT(medals) AS TOTAL_MEDALS FROM OlympicAthletes GROUP BY country ORDER BY TOTAL_MEDALS DESC");
+val result5 = sqlContext.sql("SELECT country, SUM(medals) AS TOTAL_MEDALS FROM OlympicAthletes GROUP BY country ORDER BY TOTAL_MEDALS DESC");
 result5.coalesce(1).foreach(println)
 
 //Ejercicio 6
