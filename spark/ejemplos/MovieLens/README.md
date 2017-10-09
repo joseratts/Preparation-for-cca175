@@ -12,4 +12,4 @@ para los 20 usuarios que mas valoraciones (ratings) han dado.
 
 La estructura del fichero rating.csv es userId,movieId,rating,timestamp.
 
-Mientras que la estructura del fichero movies.csv es movieId,title,genres 
+Mientras que la estructura del fichero movies.csv es movieId,title,genres. 
