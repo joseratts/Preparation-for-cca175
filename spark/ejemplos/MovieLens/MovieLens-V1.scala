@@ -24,19 +24,19 @@ val movieRatingDF = ratingDF.join(moviesDF, "movieId")
 
 //Ejercicio 1
 movieRatingDF.select("movieId", "title", "rating").groupBy("movieId", "title")
-	.agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS")).filter($"REVIEWS" > 10)
-	.orderBy($"AVG-RATING".desc).show()
+.agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS")).filter($"REVIEWS" > 10)
+.orderBy($"AVG-RATING".desc).show()
 
 //Ejercicio 2
 movieRatingDF.select("movieId", "title", "rating", "genres").where(array_contains($"genres", "Comedy"))
-	.groupBy("movieId", "title").agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS"))
-	.filter($"REVIEWS" > 10).orderBy($"AVG-RATING".desc).show()
+.groupBy("movieId", "title").agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS"))
+.filter($"REVIEWS" > 10).orderBy($"AVG-RATING".desc).show()
 
 //Ejercicio 3
 movieRatingDF.select("movieId", "title", "rating", "genres").where(array_contains($"genres","Drama"))
-	.groupBy("movieId", "title").agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS"))
-	.filter($"REVIEWS" > 10).orderBy($"AVG-RATING".desc).show()
+.groupBy("movieId", "title").agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS"))
+.filter($"REVIEWS" > 10).orderBy($"AVG-RATING".desc).show()
 
 //Ejercicio 4
 ratingDF.select("userId", "rating").groupBy("userId").agg((avg("rating")).as("AVG-RATING"), (count("rating")).as("REVIEWS"))
-	.orderBy($"REVIEWS".desc, $"AVG-RATING".desc).limit(20).show()
+.orderBy($"REVIEWS".desc, $"AVG-RATING".desc).limit(20).show()
