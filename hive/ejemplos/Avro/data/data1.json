@@ -1,0 +1,6 @@
+{ "id": 1, "nombre": "Jose Antonio", "apellido": "Rodriguez Diaz", "edad": 37, "profesion": "Ingeniero", "clase": "A" } 
+{ "id": 2, "nombre": "Maria Isabel", "apellido": "Gomez Gallanti", "edad": 34, "profesion": "Medico", "clase": "B" }
+{ "id": 3, "nombre": "Norma Elena", "apellido": "Diaz Domar", "edad": 60, "profesion": "Ama de casa", "clase": "C" }
+{ "id": 4, "nombre": "Rafael", "apellido": "Perez", "edad": 38, "profesion": "Ingeniero", "clase": "A" }
+{ "id": 5, "nombre": "Maria Laura", "apellido": "Rodriguez Gomez", "edad": 1, "profesion": "Estudiante", "clase": "B" }
+{ "id": 6, "nombre": "Nieves Magali", "apellido": "Diaz Dommar", "edad": 75, "profesion": "Administrador", "clase": "C" }

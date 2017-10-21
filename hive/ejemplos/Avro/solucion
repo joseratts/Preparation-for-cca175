@@ -1,0 +1,38 @@
+Crear fichero schema de avro denominado schema2.avsc
+
+CREATE EXTERNAL TABLE PERSONAS 
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+WITH SERDEPROPERTIES ( 'avro.schema.url'='file:////home/cloudera/Preparation-for-cca175/hive/ejemplos/Avro/data/schema2.avsc' )
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat';
+
+
+SELECT AVG(edad) FROM personas;
+SELECT AVG(edad) FROM personas WHERE clase = 'B';
+SELECT COUNT(*) as TOTAL, OCUPACION FROM personas GROUP BY ocupacion ORDER BY TOTAL DESC;
+
+avro-tools fromjson --schema-file schema1.avsc --codec snappy data1.json > data4-1.avro
+avro-tools fromjson --schema-file schema2.avsc --codec snappy data2.json > data4-2.avro
+
+
+SET hive.exec.compress.output=true;
+SET avro.output.codec=snappy;
+CREATE EXTERNAL TABLE PERSONAS2 
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+WITH SERDEPROPERTIES ( 'avro.schema.url'='file:////home/cloudera/Preparation-for-cca175/hive/ejemplos/Avro/data/schema2.avsc' )
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat';
+
+hdfs dfs -put data4-1.avro /user/hive/warehouse/personas2
+hdfs dfs -put data4-2.avro /user/hive/warehouse/personas2
+
+
+SELECT AVG(edad) FROM personas2;
+SELECT AVG(edad) FROM personas2 WHERE clase = 'B';
+SELECT COUNT(*) as TOTAL, OCUPACION FROM personas2 GROUP BY ocupacion ORDER BY TOTAL DESC;

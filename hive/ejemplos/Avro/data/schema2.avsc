@@ -1,0 +1,28 @@
+{
+  "type" : "record",
+  "name" : "avro_example_schema",
+  "namespace" : "com.josedeveloper.avro",
+  "fields" : [ {
+    "name" : "nombre",
+    "type" : "string",
+    "doc"  : "Nombre de la persona"
+  }, {
+    "name" : "apellido",
+    "type" : "string",
+    "doc"  : "apellidos de la persona"
+  }, {
+    "name" : "edad",
+    "type" : "int",
+    "doc"  : "edad"
+  }, {
+    "name" : "ocupacion",
+    "type" : "string",
+    "aliases" : ["profesion"],
+    "doc"  : "profesión de la persona"
+  }, {
+    "name" : "clase",
+    "type" : "string",
+    "doc"  : "clase"
+  } ],
+  "doc:" : "Schema de ejemplo versión 2"
+}
