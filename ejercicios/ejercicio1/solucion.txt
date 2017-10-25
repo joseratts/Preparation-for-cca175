@@ -1,0 +1,17 @@
+//Solución problema 1
+sqoop import --connect jdbc:mysql://quickstart.cloudera:3306/retail_db -table products 
+--username=retail_dba --password=cloudera --target-dir /user/cloudera/products/exercise1/rawdata 
+--fields-terminated-by "|"
+
+//Solución problema 2
+saveAsAvro.scala
+
+//Solución problema2 3 y 4
+calculateAggregation.scala
+
+//Solución problema 5
+CREATE TABLE products_aggregation (category_id INT, avg_price DECIMAL(10,2), min_price DECIMAL(10,2), max_price DECIMAL(10,2))
+
+sqoop export --connect jdbc:mysql://quickstart.cloudera:3306/retail_db -table products_aggregation 
+--username=retail_dba --password=cloudera --export-dir /user/cloudera/products/exercise1/resultdata 
+--fields-terminated-by ","
