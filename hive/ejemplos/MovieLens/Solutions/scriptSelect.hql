@@ -14,7 +14,7 @@ SELECT m.title, avg(r.rating) as average_rating FROM movies m JOIN ratings r ON 
 
 -- 3. Hallar el top 10 de películas con mejor rating cuyo genero sea Drama.
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/cloudera/hive/movies_result2'
+INSERT OVERWRITE LOCAL DIRECTORY '/home/cloudera/hive/movies_result3'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 SELECT m.title, avg(r.rating) as average_rating FROM movies m JOIN ratings r ON (m.movieid = r.movieid) where array_contains(m.genres,"Drama") GROUP BY m.title ORDER BY average_rating DESC LIMIT 10;
