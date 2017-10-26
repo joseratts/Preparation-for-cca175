@@ -1,0 +1,13 @@
+//solucion problema 1
+sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table products --target-dir /user/cloudera/products --delete-target-dir --fields-terminated-by '|' --as-textfile
+
+//solucion problema 2
+hdfs dfs -mkdir /user/cloudera/problem2
+hdfs dfs -mkdir /user/cloudera/problem2/products
+hdfs dfs -mv /user/cloudera/products/* /user/cloudera/problem2/products/
+
+//solucion problema 3
+hdfs dfs -chmod 765 /user/cloudera/problem2/products/*
+
+//solucion problema 4 y 5
+script.scala
