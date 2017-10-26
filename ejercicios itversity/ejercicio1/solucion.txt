@@ -1,0 +1,11 @@
+//solución problema 1
+sqoop import --connect 'jdbc:mysql://quickstart.cloudera:3306/retail_db' --username="retail_dba" --password="cloudera" --delete-target-dir --target-dir /user/cloudera/problem1/orders --table orders --as-avrodatafile --compress --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+//solución problema 2
+sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table order_items --target-dir /user/cloudera/problem1/orders-items --delete-target-dir --as-avrodatafile --compress --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+//solución problema 3, 4a, 5a y 6a
+loadData.scala
+
+//solución problema 8
+sqoop export --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --export-dir 
