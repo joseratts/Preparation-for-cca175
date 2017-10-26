@@ -1,0 +1,56 @@
+//solucion problema 1
+sqoop import-all-tables --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --compress -compression-codec org.apache.hadoop.io.compress.SnappyCodec --warehouse-dir /user/hive/warehouse/retail_stage.db --as-avrodatafile
+
+//solucion problema 2
+hdfs dfs -get /user/hive/warehouse/retail_stage.db/orders/part-m-00000.avro
+avro-tools getschema part-m-00000.avro > schema.avsc
+hdfs dfs -mkdir /user/hive/schemas
+hdfs dfs -mkdir /user/hive/schemas/orders
+hdfs dfs -copyFromLocal schema.avsc /user/hive/schemas/orders
+
+SET hive.exec.compress.output=true;
+SET avro.output.codec=snappy;
+CREATE EXTERNAL TABLE orders_sqoop
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+LOCATION '/user/hive/warehouse/retail_stage.db/orders'
+TBLPROPERTIES ('avro.schema.url'='/user/hive/schemas/orders/schema.avsc');
+
+//solucion problema 3
+SELECT Y.* FROM (SELECT count(1) as total_orders, order_date FROM orders_sqoop GROUP BY order_date ORDER BY total_orders desc LIMIT 1) X, orders_sqoop Y WHERE Y.order_date = X.order_date;
+
+//solucion problema 4
+invalidate metadata;
+SELECT Y.* FROM (SELECT count(1) as total_orders, order_date FROM orders_sqoop GROUP BY order_date ORDER BY total_orders desc LIMIT 1) X, orders_sqoop Y WHERE Y.order_date = X.order_date;
+
+//solucion problema 5
+CREATE DATABASE retail;
+use retail;
+SET hive.exec.compress.output=true;
+SET avro.output.codec=snappy;
+CREATE TABLE orders_avro (
+  order_id int,
+  order_date date,
+  order_customer_id int,
+  order_status string)
+  partitioned by (order_month string)
+STORED AS AVRO;
+
+
+//solucion problema 6
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE orders_avro partition (order_month)
+select order_id, 
+  to_date(from_unixtime(cast(order_date/1000 as int))), 
+  order_customer_id, 
+  order_status, 
+  substr(from_unixtime(cast(order_date/1000 as int)),1,7) as order_month 
+from default.orders_sqoop;
+
+//solucion problema 9
+INSERT INTO TABLE default.orders_sqoop VALUES (6, 1374735600000, 11319,	"COMPLETE",	NULL, NULL);
+INSERT INTO TABLE default.orders_sqoop VALUES (7, 1374735600000, 11320,	"COMPLETE",	NULL, NULL);
