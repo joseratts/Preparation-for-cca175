@@ -7,5 +7,5 @@ sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --usern
 //solución problema 3
 sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table orders --target-dir /user/cloudera/problem4/parquet --as-parquetfile
 
-//solucion problema 4 - 8
+//solución problema 4 - 8
 script.scala
