@@ -1,0 +1,11 @@
+//solución problema 1
+sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table orders --target-dir /user/cloudera/problem4/text --fields-terminated-by '\t' --lines-terminated-by '\n' --as-textfile
+
+//solución problema 2
+sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table orders --target-dir /user/cloudera/problem4/avro --as-avrodatafile
+
+//solución problema 3
+sqoop import --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" --username "retail_dba" --password "cloudera" --table orders --target-dir /user/cloudera/problem4/parquet --as-parquetfile
+
+//solucion problema 4 - 8
+script.scala
