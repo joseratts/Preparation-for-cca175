@@ -1,0 +1,139 @@
+// Step 1
+
+sqoop import -m3 --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table products_replica \
+--fields-terminated-by "|" --lines-terminated-by "/n" \
+--null-string "NOT-AVAILABLE" --null-non-string -1 \
+--where "product_id between 1 and 1000" \
+--target-dir "/user/cloudera/problem5/products-text";
+
+//--boundary-query : By default sqoop will use query select min(), max() from to find out boundaries for creating splits.
+// In some cases this query is not the most optimal so you can specify any arbitrary query returning two numeric columns using --boundary-query argument.
+
+// Como hemos hecho un where restringiendo el numero de elementos a importar, para optimizar deberiamos usar --boundary-query
+sqoop import -m3 --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table products_replica \
+--fields-terminated-by "|" --lines-terminated-by '/n' \
+--null-string "NOT-AVAILABLE" --null-non-string -1 \
+--where 'product_id between 1 and 1000' \
+--boundary-query 'select max(product_id), min(product_id) from products_replica where product_id between 1 and 1000' \
+--target-dir "/user/cloudera/problem5/products-text";
+
+//Step 2
+
+sqoop import -m2 --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table products_replica \
+--fields-terminated-by "*" --lines-terminated-by '\n' \
+--null-string "NA" --null-non-string -1000 \
+--where 'product_id <= 1111' \
+--as-textfile --target-dir /user/cloudera/problem5/products-text-part1;
+
+//Step 3
+sqoop import -m 5 --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table products_replica \
+--fields-terminated-by "*" --lines-terminated-by "\n" \
+--null-string "NA" --null-non-string -1000 \
+--where 'product_id >= 1111' \
+--as-textfile --target-dir /user/cloudera/problem5/products-text-part2;
+
+//Step 4
+
+//Volvemos a generar el jar que se usó durante la importación, ya que nos hará falta para el merge
+sqoop codegen --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table products_replica \
+--fields-terminated-by "*" --lines-terminated-by "\n" \
+--null-string "NA" --null-non-string -1000 \
+--bindir '/home/cloudera/sqoop/jar' \
+--outdir '/home/cloudera/sqoop';
+
+sqoop-merge \
+--class-name 'products_replica' \
+--jar-file '/home/cloudera/sqoop/jar/products_replica.jar' \
+--new-data '/user/cloudera/problem5/products-text-part2' \
+--onto '/user/cloudera/problem5/products-text-part1' \
+--merge-key 'product_id' \
+--target-dir '/user/cloudera/problem5/products-text-both-parts';
+
+//Step 5
+
+//Creamos nuestro Job
+sqoop job --create sqoop_job \
+-- import --connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera --table products_replica \
+--target-dir /user/cloudera/problem5/products-incremental \
+--check-column product_id \
+--incremental append \
+--last-value 0;
+
+//Lanzamos el Job y obtendremos la siguiente informacion INFO mapreduce.ImportJobBase: Retrieved 1345 records.
+sqoop job --exec sqoop_job
+
+//Desde mysql
+mysql -u retail_dba -p retail_db
+mysql> insert into products_replica values (1346,2,'something 1','something 2',300.00,'not avaialble',3,'STRONG');
+mysql> insert into products_replica values (1347,5,'something 787','something 2',356.00,'not avaialble',3,'STRONG');
+
+
+//Lanzamos el Job y obtendremos la siguiente información INFO mapreduce.ImportJobBase: Retrieved 2 records.
+sqoop job --exec sqoop_job
+
+//Desde mysql
+mysql -u retail_dba -p retail_db
+mysql> insert into products_replica values (1376,4,'something 1376','something 2',1.00,'not avaialble',3,'WEAK');
+mysql> insert into products_replica values (1365,4,'something 1376','something 2',10.00,'not avaialble',null,'NOT APPLICABLE');
+
+//Lanzamos el Job y obtendremos la siguiente información INFO mapreduce.ImportJobBase: Retrieved 2 records.
+sqoop job --exec sqoop_job
+
+//Step 6
+
+// Desde Hive
+CREATE DATABASE problem5;
+CREATE TABLE  products_hive(product_id int, product_category_id int, product_name string, product_description string, product_price float, product_image string, product_grade int, product_sentiment string);
+
+//Sqoop Job
+sqoop job --create sqoop_job_hive \
+-- import --connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera --table products_replica \
+--incremental append \
+--check-column product_id \
+--last-value 0 \
+--hive-import --hive-table products_hive \
+--hive-database problem5;
+
+//Lanzamos el Job y obtendremos la siguiente informacion INFO mapreduce.ImportJobBase: Retrieved 1349 records. | Table problem5.products_hive stats: [numFiles=4, totalSize=187613
+sqoop job --exec sqoop_job_hive;
+
+//Mysql
+insert into products_replica values (1378,4,'something 1376','something 2',10.00,'not avaialble',null,'NOT APPLICABLE');
+insert into products_replica values (1379,4,'something 1376','something 2',10.00,'not avaialble',null,'NOT APPLICABLE');
+
+//Lanzamos el Job y obtendremos la siguiente informacion INFO  INFO mapreduce.ImportJobBase: Retrieved 2 records. | Table problem5.products_hive stats: [numFiles=6, totalSize=187759]
+sqoop job --exec sqoop_job_hive;
+
+//Step 7
+
+//Desde Hive
+insert into table products_hive values (1380,4,'something 1380','something 2',8.00,'not avaialble',3,'NOT APPLICABLE');
+insert into table products_hive values (1381,4,'something 1380','something 2',8.00,'not avaialble',3,'NOT APPLICABLE');
+
+//Desde Mysql
+create table products_external  (product_id int(11) primary Key, product_grade int(11), product_category_id int(11), product_name varchar(100), product_description varchar(100), product_price float, product_impage varchar(500), product_sentiment varchar(100));
+
+//Desde Sqoop
+sqoop export \
+--connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera \
+--export-dir /user/hive/warehouse/problem5.db/products_hive/ \
+--input-fields-terminated-by '\001' \
+--input-null-string "null" \
+--input-null-non-string "null" \
+--update-key "product_id" \
+--update-mode "allowinsert" \
+--columns "product_id,product_category_id,product_name,product_description,product_price,product_impage,product_grade,product_sentiment" \
+--table products_external;
+
+// nota si usamos "" en --input-fields-terminated-by '\001' fallaria y abría que escapar el caracter \
+
+
+
+
+
+
