@@ -1,0 +1,84 @@
+// Step 1.1
+
+sqoop import --connect jdbc:mysql://quickstart:3306/retail_db \
+--username retail_dba --password cloudera --table orders \
+--target-dir /user/cloudera/problem7/prework \
+--as-avrodatafile -m1;
+
+// Step 1.2
+mkdir /home/cloudera/flume-avro
+cd /home/cloudera/flume-avro
+hdfs dfs -get  /user/cloudera/problem7/prework
+
+//Create flume-avro.conf
+
+avro-client.sources=rsc
+avro-client.channels=chn
+avro-client.sinks=sk
+
+//Define source properties
+avro-client.sources.rsc.type=avro
+avro-client.sources.rsc.port= 11112
+avro-client.sources.rsc.bind= localhost
+
+//Define channels properties
+avro-client.channels.chn.type=jdbc
+
+//Define sink properties
+avro-client.sinks.sk.type = hdfs
+avro-client.sinks.sk.hdfs.path = /user/cloudera/problem7/sink
+avro-client.sinks.sk.hdfs.fileType= DataStream
+avro-client.sinks.sk.hdfs.fileSuffix = .avro
+avro-client.sinks.sk.hdfs.serializer = avro_event
+avro-client.sinks.sk.hdfs.serializer.compressionCodec = snappy
+
+
+//Binding channel
+avro-client.sources.rsc.channels = chn
+avro-client.sinks.sk.channel = chn
+
+// Step 1.3
+Run the flume agent
+
+flume-ng agent --name avro-client --conf . --conf-file flume-avro.config
+
+// Step 1.3
+Run the flume Avro client
+
+flume-ng avro-client -H localhost -p 11112 -F /home/cloudera/flume-avro/prework/part-m-00000.avro
+
+
+// Step 2
+
+// Create Flume config file
+agent-logs.sources=s1
+agent-logs.channels=c1
+agent-logs.sinks=k1
+
+agent-logs.sources.s1.type = spooldir
+agent-logs.sources.s1.spoolDir = /opt/gen_logs/logs
+agent-logs.sources.s1.batchSize = 200
+
+agent-logs.channels.c1.type = memory
+agent-logs.channels.c1.capacity = 1000
+
+agent-logs.sinks.k1.type = hdfs
+agent-logs.sinks.k1.hdfs.path = /user/cloudera/problem7/step2
+agent-logs.sinks.k1.fileSuffix = .log
+agent-logs.sinks.k1.writeFormat = Text
+agent-logs.sinks.k1.fileType = DataStream
+
+agent-logs.sources.s1.channels = c1
+agent-logs.sinks.k1.channel = c1
+
+
+//Creamos directorio destino en hdfs y comenzamos a generar los logs
+
+hadoop fs -mkdir /user/cloudera/problem7/sink
+start_logs
+
+//Run the flume-agent
+
+flume-ng agent --name agent-logs --conf . --conf-file agent-logs.config
+
+
