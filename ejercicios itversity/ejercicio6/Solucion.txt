@@ -1,0 +1,35 @@
+1) Crea un hive meta store llamado problem6 e importa todoas las tablas desde mysl retail_db en dicho meta store
+
+//Desde HIVE-SHELL
+Hive > CREATE DATABASE problem6;
+
+//Improtamos los data
+sqoop import-all-tables -m1 --connect "jdbc:mysql://quickstart:3306/retail_db" \
+--username retail_dba --password cloudera \
+--warehouse-dir "/user/hive/warehouse/problem6.db" \
+--hive-import --hive-database problem6 \
+--create-hive-table \
+--as-textfile;
+
+//Para poder tener acceso direct desde SPARK al MetaStore
+sudo ln -s /usr/lib/hive/conf/hive-site.xml /usr/lib/spark/conf/hive-site.xml
+
+//Fichero Scala
+
+val hc = new org.apache.spark.sql.hive.HiveContext(sc);
+hc.sql("USE problem6")
+
+//Step 4
+// Encuentra los 10 mejores clientes con más compras unicas y si hay mas de uno con el mismo numero de compras, tiene prioridad el de menor id
+var hiveResult2 = hc.sql("Select c.customer_id as id, c.customer_fname as name, count(distinct(order_item_product_id)) as unique_products from orders o join order_items oi on (o.order_id = order_item_order_id) join customers c on o.order_customer_id = c.customer_id group by c.customer_id, c.customer_fname order by unique_products desc, c.customer_id limit 10");
+
+//Step 6
+// Sobre los datos del step4, extrae los detalles de los productos comprados por los 10 clientes cuyo precio es inferior a 100 USD por unidad
+hiveResult2.registerTempTable("top_customer")
+var topProducts = hc.sql("select distinct p.* from products p inner join order_items oi on oi.order_item_product_id = p.product_id inner join orders o on o.order_id = oi.order_item_order_id inner join top_customer tc on o.order_customer_id = tc.id where p.product_price < 100");
+
+// Step 7
+topProducts.registerTempTable("top_products")
+// esta sentencia da error -> ERROR hdfs.KeyProviderCache: Could not find uri with key [dfs.encryption.key.provider.uri] to create a keyProvider !!
+hc.sql("create table problem6.hiveResult2 as select * from top_products" )
+hc.sql("create table problem6.top_products1 as select distinct p.* from products p inner join order_items oi on oi.order_item_product_id = p.product_id inner join orders o on o.order_id = oi.order_item_order_id inner join top_customer tc on o.order_customer_id = tc.id where p.product_price < 100");
